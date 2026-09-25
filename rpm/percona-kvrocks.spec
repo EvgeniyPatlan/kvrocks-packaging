@@ -1,4 +1,14 @@
 %global srcname percona-kvrocks
+# EL10 and Amazon Linux 2023 auto-export hardened CFLAGS/LDFLAGS (-pie,
+# via redhat-hardened-ld) at the start of the build section; vendored
+# LuaJIT's Makefile picks up LDFLAGS while linking its host/minilua tool
+# without a matching PIE-enabled compile, breaking the link. EL8/EL9
+# never auto-export these flags, which is why only EL10/AL2023 hit it.
+# The controlling macro must be undefined, not set to zero, to suppress
+# the auto-export (redhat/macros only checks whether it is defined at
+# all); undefining a macro that was never defined is a safe no-op, so
+# this line is harmless on EL8/EL9.
+%undefine _auto_set_build_flags
 
 Name:           percona-kvrocks
 Version:        2.17.0
