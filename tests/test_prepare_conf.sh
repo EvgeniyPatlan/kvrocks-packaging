@@ -24,3 +24,9 @@ if sh "$script" "$tmp/mutated.conf" "$tmp/out2.conf" 2>"$tmp/err"; then
     echo "mutated input must fail"; exit 1
 fi
 grep -q 'dir /tmp/kvrocks' "$tmp/err" || { echo "error must name the missing line"; exit 1; }
+
+sed 's/^# pidfile /pidfile /' "$here/fixtures/kvrocks.conf" > "$tmp/mutated_pidfile.conf"
+if sh "$script" "$tmp/mutated_pidfile.conf" "$tmp/out3.conf" 2>"$tmp/err_pidfile"; then
+    echo "uncommented pidfile must fail"; exit 1
+fi
+grep -q '# pidfile /var/run/kvrocks.pid' "$tmp/err_pidfile" || { echo "error must name the pidfile line"; exit 1; }
