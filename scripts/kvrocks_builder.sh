@@ -196,13 +196,13 @@ get_sources() {
         set -u
     fi
 
-    cd "$WORKDIR"
+    cd "$WORKDIR" || die "Cannot cd to $WORKDIR"
 
     local srcdir="${PACKAGE_NAME}-${VERSION}"
     rm -rf "$srcdir"
     git clone "$REPO" "$srcdir" || die "Failed to clone $REPO"
-    cd "$srcdir"
-    git checkout "$BRANCH"
+    cd "$srcdir" || die "Cannot cd to $srcdir"
+    git checkout "$BRANCH" || die "Cannot checkout $BRANCH"
     local revision
     revision="$(git rev-parse --short HEAD)"
 
@@ -217,15 +217,17 @@ get_sources() {
             [[ -d "${BUILDER_SCRIPT_DIR}/../${d}" ]] && cp -r "${BUILDER_SCRIPT_DIR}/../${d}" packaging/
         done
     else
-        git clone --depth 1 --branch "${PACKAGING_BRANCH:-main}" "$PACKAGING_REPO" packaging
+        git clone --depth 1 --branch "${PACKAGING_BRANCH:-main}" "$PACKAGING_REPO" packaging \
+            || die "Failed to clone packaging from $PACKAGING_REPO"
         rm -rf packaging/.git
     fi
 
-    python3 x.py fetch-deps "$PWD/deps" -DENABLE_OPENSSL=ON -DPORTABLE=1
+    python3 x.py fetch-deps "$PWD/deps" -DENABLE_OPENSSL=ON -DPORTABLE=1 \
+        || die "fetch-deps failed"
     python3 "${BUILDER_SCRIPT_DIR}/gen-sbom.py" --src "$PWD" --name "$PACKAGE_NAME" \
-        --version "$VERSION" --out "$PWD/sbom"
+        --version "$VERSION" --out "$PWD/sbom" || die "gen-sbom.py failed"
 
-    cd "$WORKDIR"
+    cd "$WORKDIR" || die "Cannot cd to $WORKDIR"
     tar --owner=0 --group=0 --exclude=.git -czf "${srcdir}.tar.gz" "$srcdir"
 
     cat > kvrocks.properties <<EOF
@@ -242,7 +244,7 @@ UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}/${srcdir}/${BRANCH}/${revision}/${B
 EOF
 
     copy_artifacts "source_tarball" "${srcdir}.tar.gz"
-    cd "$CURDIR"
+    cd "$CURDIR" || die "Cannot cd to $CURDIR"
 }
 
 print_settings() {
