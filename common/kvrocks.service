@@ -1,0 +1,26 @@
+[Unit]
+Description=Apache Kvrocks key-value database
+Documentation=https://kvrocks.apache.org
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+User=kvrocks
+Group=kvrocks
+ExecStart=/usr/bin/kvrocks -c /etc/kvrocks/kvrocks.conf
+Restart=on-failure
+RestartSec=10s
+TimeoutSec=300
+LimitNOFILE=100000
+StateDirectory=kvrocks
+StateDirectoryMode=0750
+LogsDirectory=kvrocks
+LogsDirectoryMode=0750
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
