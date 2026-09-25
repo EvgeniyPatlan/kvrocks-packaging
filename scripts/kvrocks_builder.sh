@@ -9,9 +9,6 @@ readonly DEFAULT_BRANCH="v2.17.0"
 readonly DEFAULT_RELEASE="1"
 readonly DEFAULT_REPO="https://github.com/apache/kvrocks.git"
 readonly PACKAGING_REPO="https://github.com/EvgeniyPatlan/kvrocks-packaging.git"
-# cmake invocations run from inside the extracted source tree in both the RPM
-# spec and the debian rules, so "deps" resolves to <src>/deps in both.
-readonly CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=RelWithDebInfo -DDEPS_FETCH_DIR=deps -DENABLE_OPENSSL=ON -DPORTABLE=1"
 
 BUILDER_SCRIPT_DIR="$(dirname "$(readlink -e "${0}")")"
 readonly BUILDER_SCRIPT_DIR
@@ -178,7 +175,6 @@ install_deps_rpm() {
             pkgs+=(gcc gcc-c++ libstdc++-static)
             ;;
     esac
-    [[ "$RHEL" == "8" ]] && pkgs+=(python39)
     "$pm" install -y "${pkgs[@]}"
     "$pm" clean all
 }
@@ -188,6 +184,65 @@ install_deps_deb() {
     apt_get -y install build-essential debhelper devscripts dpkg-dev fakeroot \
         lsb-release ca-certificates git cmake autoconf automake libtool \
         python3 perl unzip patch libssl-dev pkg-config
+}
+
+get_sources() {
+    [[ "$SOURCE" -eq 1 ]] || return 0
+
+    if [[ -f /opt/rh/gcc-toolset-12/enable ]]; then
+        set +u
+        # shellcheck disable=SC1091
+        . /opt/rh/gcc-toolset-12/enable
+        set -u
+    fi
+
+    cd "$WORKDIR"
+
+    local srcdir="${PACKAGE_NAME}-${VERSION}"
+    rm -rf "$srcdir"
+    git clone "$REPO" "$srcdir" || die "Failed to clone $REPO"
+    cd "$srcdir"
+    git checkout "$BRANCH"
+    local revision
+    revision="$(git rev-parse --short HEAD)"
+
+    [[ "$(cat src/VERSION.txt)" == "$VERSION" ]] \
+        || die "src/VERSION.txt is '$(cat src/VERSION.txt)', expected '$VERSION'"
+
+    if [[ "$LOCAL_BUILD" -eq 1 ]]; then
+        mkdir packaging
+        [[ -d "${BUILDER_SCRIPT_DIR}/../common" ]] || die "${BUILDER_SCRIPT_DIR}/../common is required by --use_local_packaging_script"
+        local d
+        for d in rpm debian common; do
+            [[ -d "${BUILDER_SCRIPT_DIR}/../${d}" ]] && cp -r "${BUILDER_SCRIPT_DIR}/../${d}" packaging/
+        done
+    else
+        git clone --depth 1 --branch "${PACKAGING_BRANCH:-main}" "$PACKAGING_REPO" packaging
+        rm -rf packaging/.git
+    fi
+
+    python3 x.py fetch-deps "$PWD/deps" -DENABLE_OPENSSL=ON -DPORTABLE=1
+    python3 "${BUILDER_SCRIPT_DIR}/gen-sbom.py" --src "$PWD" --name "$PACKAGE_NAME" \
+        --version "$VERSION" --out "$PWD/sbom"
+
+    cd "$WORKDIR"
+    tar --owner=0 --group=0 --exclude=.git -czf "${srcdir}.tar.gz" "$srcdir"
+
+    cat > kvrocks.properties <<EOF
+PRODUCT=${PRODUCT}
+PRODUCT_FULL=${srcdir}
+VERSION=${VERSION}
+RELEASE=${RELEASE}
+BRANCH=${BRANCH}
+REPO=${REPO}
+REVISION=${revision}
+BUILD_NUMBER=${BUILD_NUMBER:-}
+BUILD_ID=${BUILD_ID:-}
+UPLOAD=UPLOAD/experimental/BUILDS/${PRODUCT}/${srcdir}/${BRANCH}/${revision}/${BUILD_ID:-}
+EOF
+
+    copy_artifacts "source_tarball" "${srcdir}.tar.gz"
+    cd "$CURDIR"
 }
 
 print_settings() {
@@ -213,3 +268,4 @@ fi
 
 get_system
 install_deps
+get_sources
