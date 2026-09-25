@@ -87,8 +87,8 @@ test_files() {
     check "/usr/bin/kvrocks2redis executable" test -x /usr/bin/kvrocks2redis
     check "kvrocks user exists" getent passwd kvrocks
     check "config mode 640 root:kvrocks" test "$(stat -c '%a %U:%G' /etc/kvrocks/kvrocks.conf)" = "640 root:kvrocks"
-    check "data dir owned by kvrocks" test "$(stat -c '%U' /var/lib/kvrocks)" = kvrocks
-    check "log dir owned by kvrocks" test "$(stat -c '%U' /var/log/kvrocks)" = kvrocks
+    check "data dir 750 kvrocks:kvrocks" test "$(stat -c '%a %U:%G' /var/lib/kvrocks)" = "750 kvrocks:kvrocks"
+    check "log dir 750 kvrocks:kvrocks" test "$(stat -c '%a %U:%G' /var/log/kvrocks)" = "750 kvrocks:kvrocks"
     check "config dir set to /var/lib/kvrocks" grep -qx 'dir /var/lib/kvrocks' /etc/kvrocks/kvrocks.conf
     check "SBOM spdx present" test -s /usr/share/percona-kvrocks/sbom/percona-kvrocks.spdx.json
     check "SBOM cdx present" test -s /usr/share/percona-kvrocks/sbom/percona-kvrocks.cdx.json
@@ -148,6 +148,8 @@ test_removal() {
         check "config removed on purge" test ! -e /etc/kvrocks/kvrocks.conf
     else
         check "erase packages" pm remove -y percona-kvrocks-server percona-kvrocks-tools
+        check "data dir kept on erase" test -d /var/lib/kvrocks
+        check "log dir kept on erase" test -d /var/log/kvrocks
     fi
     check "binary removed" test ! -e /usr/bin/kvrocks
     check "tools binary removed" test ! -e /usr/bin/kvrocks2redis
