@@ -1,0 +1,6 @@
+/source_tarball/
+/srpm/
+/rpm/*.rpm
+/source_deb/
+/deb/
+/sbom/
