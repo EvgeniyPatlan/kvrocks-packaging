@@ -11,10 +11,12 @@ readonly DEFAULT_REPO="https://github.com/apache/kvrocks.git"
 readonly PACKAGING_REPO="https://github.com/EvgeniyPatlan/kvrocks-packaging.git"
 
 # dch falls back to a "user@hostname" address when these are unset, which
-# lintian flags as bogus-mail-host-in-debian-changelog; keep it matching the
-# maintainer already recorded in debian/control and debian/changelog.
-export DEBFULLNAME="Evgeniy Patlan"
-export DEBEMAIL="evgeniy.patlan@percona.com"
+# lintian flags as bogus-mail-host-in-debian-changelog; default to the
+# maintainer already recorded in debian/control and debian/changelog, but
+# let a caller's own DEBFULLNAME/DEBEMAIL win.
+: "${DEBFULLNAME:=Evgeniy Patlan}"
+: "${DEBEMAIL:=evgeniy.patlan@percona.com}"
+export DEBFULLNAME DEBEMAIL
 
 BUILDER_SCRIPT_DIR="$(dirname "$(readlink -e "${0}")")"
 readonly BUILDER_SCRIPT_DIR
@@ -297,8 +299,16 @@ build_source_deb() {
     tar xzf "${PACKAGE_NAME}_${VERSION}.orig.tar.gz"
     cd "${PACKAGE_NAME}-${VERSION}"
     cp -r packaging/debian ./debian
-    dch -D unstable --force-distribution -v "${VERSION}-${RELEASE}" \
-        "Update to ${PACKAGE_NAME} ${VERSION}"
+    # debian/changelog is checked in with the release's own top entry
+    # already at ${VERSION}-${RELEASE}; only add a new stanza when that
+    # isn't already the case (e.g. a different --version/--release), so a
+    # default run doesn't ship two consecutive identical-version entries.
+    local current_version
+    current_version="$(dpkg-parsechangelog -S Version)"
+    if [[ "$current_version" != "${VERSION}-${RELEASE}" ]]; then
+        dch -D unstable --force-distribution -v "${VERSION}-${RELEASE}" \
+            "Update to ${PACKAGE_NAME} ${VERSION}"
+    fi
     dpkg-buildpackage -S -us -uc -d
     cd "$WORKDIR"
     copy_artifacts "source_deb" ./*_source.changes ./*.dsc ./*.orig.tar.gz ./*.debian.tar.*

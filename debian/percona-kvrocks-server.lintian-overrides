@@ -1,6 +1,7 @@
 # kvrocks statically links its vendored, SBOM-tracked RocksDB build, which
-# bundles its own zlib/zstd/lz4/snappy/bzip2 (DEPS_FETCH_DIR, see
-# packaging/common); there is no system package to link against instead.
-# Lintian's embedded-library signatures vary by release (e.g. noble/jammy
-# flag libzstd, bookworm/trixie flag zlib), so match any library name.
-embedded-library *
+# bundles its own zlib/zstd (DEPS_FETCH_DIR, see packaging/common); there is
+# no system package to link against instead. Which library lintian's
+# embedded-library check reports is release-dependent: Ubuntu (noble,
+# jammy, resolute) flags libzstd, Debian (bookworm, trixie) flags zlib.
+embedded-library libzstd *
+embedded-library zlib *
