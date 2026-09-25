@@ -12,17 +12,26 @@ TEST_ONLY = {"gtest"}
 
 
 def declarations(src):
+    cmake_dir = src / "cmake"
+    if not cmake_dir.is_dir():
+        sys.exit(f"gen-sbom: {cmake_dir} is not a directory")
     found = {}
-    for f in sorted((src / "cmake").glob("*.cmake")):
+    for f in sorted(cmake_dir.glob("*.cmake")):
         for name, repo, tag, alg, digest in DECL.findall(f.read_text()):
             found[f"{name}-{tag}.zip"] = (name, repo, tag, alg, digest)
     return found
 
 
 def shipped(src):
+    deps_dir = src / "deps"
+    if not deps_dir.is_dir():
+        sys.exit(f"gen-sbom: {deps_dir} is not a directory")
     decls = declarations(src)
     deps = []
-    for archive in sorted((src / "deps").glob("*.zip")):
+    archives = sorted(deps_dir.glob("*.zip"))
+    if not archives:
+        sys.exit(f"gen-sbom: no .zip archives found in {deps_dir}")
+    for archive in archives:
         if archive.name not in decls:
             sys.exit(f"gen-sbom: no cmake declaration for {archive.name}")
         if decls[archive.name][0] not in TEST_ONLY:
