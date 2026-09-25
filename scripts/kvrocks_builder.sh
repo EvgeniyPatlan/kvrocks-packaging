@@ -169,7 +169,7 @@ install_deps_rpm() {
     case "$RHEL" in
         8|9)
             pkgs+=(gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-libstdc++-devel
-                   gcc-toolset-12-binutils)
+                   gcc-toolset-12-binutils gcc-toolset-12-annobin-plugin-gcc)
             ;;
         *)
             pkgs+=(gcc gcc-c++ libstdc++-static)
@@ -247,6 +247,39 @@ EOF
     cd "$CURDIR" || die "Cannot cd to $CURDIR"
 }
 
+build_srpm() {
+    [[ "$SRPM" -eq 1 ]] || return 0
+    [[ "$OS" == "rpm" ]] || die "Cannot build src rpm on a non-RPM system"
+    cd "$WORKDIR"
+    find_and_copy_artifact "source_tarball" "${PACKAGE_NAME}-*.tar.gz"
+    local tarfile="$FOUND_FILE"
+    rm -rf rpmbuild
+    mkdir -p rpmbuild/{SOURCES,SPECS,BUILD,SRPMS,RPMS}
+    # -C must precede the member pattern: GNU tar only honors -C for
+    # filename operands that follow it on the command line.
+    tar xzf "$tarfile" -C rpmbuild/SPECS --wildcards '*/packaging/rpm/percona-kvrocks.spec' --strip-components=3
+    mv "$tarfile" rpmbuild/SOURCES/
+    local spec="rpmbuild/SPECS/${PACKAGE_NAME}.spec"
+    sed -i "s/^Version:.*$/Version:        ${VERSION}/" "$spec"
+    sed -i "s/^Release:.*$/Release:        ${RELEASE}%{?dist}/" "$spec"
+    rpmbuild -bs --define "_topdir ${WORKDIR}/rpmbuild" --define "dist .generic" "$spec"
+    copy_artifacts "srpm" rpmbuild/SRPMS/*.src.rpm
+}
+
+build_rpm() {
+    [[ "$RPM" -eq 1 ]] || return 0
+    [[ "$OS" == "rpm" ]] || die "Cannot build rpm on a non-RPM system"
+    cd "$WORKDIR"
+    find_and_copy_artifact "srpm" "${PACKAGE_NAME}-*.src.rpm"
+    local src_rpm="$FOUND_FILE"
+    rm -rf rb
+    mkdir -p rb/{SOURCES,SPECS,BUILD,SRPMS,RPMS,BUILDROOT}
+    mv "$src_rpm" rb/SRPMS/
+    rpmbuild --define "_topdir ${WORKDIR}/rb" --define "dist .${OS_NAME}" \
+        --rebuild "rb/SRPMS/${src_rpm}"
+    copy_artifacts "rpm" rb/RPMS/*/*.rpm
+}
+
 print_settings() {
     local v
     for v in WORKDIR SOURCE SRPM RPM SDEB DEB INSTALL LOCAL_BUILD REPO BRANCH VERSION RELEASE; do
@@ -271,3 +304,5 @@ fi
 get_system
 install_deps
 get_sources
+build_srpm
+build_rpm
