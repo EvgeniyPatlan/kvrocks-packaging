@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+CONFFILE=/etc/kvrocks/kvrocks.conf
+
+if [ "$1" = "configure" ]; then
+    if ! getent passwd kvrocks >/dev/null; then
+        adduser --system --group --home /var/lib/kvrocks --no-create-home \
+            --gecos "Apache Kvrocks" --quiet kvrocks
+    fi
+    for d in /var/lib/kvrocks /var/log/kvrocks; do
+        if ! dpkg-statoverride --list "$d" >/dev/null 2>&1; then
+            dpkg-statoverride --update --add kvrocks kvrocks 0750 "$d"
+        fi
+    done
+    if ! dpkg-statoverride --list "$CONFFILE" >/dev/null 2>&1; then
+        dpkg-statoverride --update --add root kvrocks 0640 "$CONFFILE"
+    fi
+fi
+
+#DEBHELPER#
+
+exit 0

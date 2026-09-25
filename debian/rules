@@ -1,0 +1,55 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/architecture.mk
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# CMake's FetchContent extraction (libarchive) needs a UTF-8 locale to read
+# non-ASCII member names in vendored dep archives (e.g. PEGTL's test fixtures);
+# the dpkg-buildpackage environment defaults to POSIX/C.
+export LC_ALL = C.UTF-8
+
+%:
+	dh $@ --buildsystem=cmake
+
+override_dh_auto_configure:
+	# dh's cmake buildsystem unconditionally injects
+	# -DFETCHCONTENT_FULLY_DISCONNECTED=ON, which stops CMake's FetchContent
+	# from ever populating (extracting) the vendored dep archives, even
+	# though DEPS_FETCH_DIR already holds them locally and no network is
+	# touched. Passing it again after dh's own flags overrides that value
+	# (cmake keeps the last -D for a given variable on the command line)
+	# so the local zips are still extracted offline.
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DDEPS_FETCH_DIR=$(CURDIR)/deps \
+		-DENABLE_OPENSSL=ON \
+		-DPORTABLE=1 \
+		-DFETCHCONTENT_FULLY_DISCONNECTED=OFF
+
+override_dh_auto_build:
+	dh_auto_build -- kvrocks kvrocks2redis
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	mkdir -p debian/tmp/etc
+	install -D -m 0755 obj-$(DEB_HOST_GNU_TYPE)/kvrocks debian/tmp/usr/bin/kvrocks
+	install -D -m 0755 obj-$(DEB_HOST_GNU_TYPE)/kvrocks2redis debian/tmp/usr/bin/kvrocks2redis
+	sh packaging/common/prepare-conf.sh kvrocks.conf debian/tmp/etc/kvrocks.conf.packaged
+	install -D -m 0640 debian/tmp/etc/kvrocks.conf.packaged debian/tmp/etc/kvrocks/kvrocks.conf
+	rm debian/tmp/etc/kvrocks.conf.packaged
+	install -D -m 0644 sbom/percona-kvrocks.spdx.json debian/tmp/usr/share/percona-kvrocks/sbom/percona-kvrocks.spdx.json
+	install -D -m 0644 sbom/percona-kvrocks.cdx.json debian/tmp/usr/share/percona-kvrocks/sbom/percona-kvrocks.cdx.json
+	install -D -m 0644 utils/kvrocks2redis/kvrocks2redis.conf debian/tmp/usr/share/doc/percona-kvrocks-tools/kvrocks2redis.conf.example
+
+override_dh_installsystemd:
+	install -D -m 0644 packaging/common/kvrocks.service debian/percona-kvrocks-server.kvrocks.service
+	dh_installsystemd -ppercona-kvrocks-server --name=kvrocks --no-start
+
+override_dh_fixperms:
+	dh_fixperms -Xetc/kvrocks/kvrocks.conf
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -f debian/percona-kvrocks-server.kvrocks.service

@@ -10,6 +10,12 @@ readonly DEFAULT_RELEASE="1"
 readonly DEFAULT_REPO="https://github.com/apache/kvrocks.git"
 readonly PACKAGING_REPO="https://github.com/EvgeniyPatlan/kvrocks-packaging.git"
 
+# dch falls back to a "user@hostname" address when these are unset, which
+# lintian flags as bogus-mail-host-in-debian-changelog; keep it matching the
+# maintainer already recorded in debian/control and debian/changelog.
+export DEBFULLNAME="Evgeniy Patlan"
+export DEBEMAIL="evgeniy.patlan@percona.com"
+
 BUILDER_SCRIPT_DIR="$(dirname "$(readlink -e "${0}")")"
 readonly BUILDER_SCRIPT_DIR
 
@@ -280,6 +286,49 @@ build_rpm() {
     copy_artifacts "rpm" rb/RPMS/*/*.rpm
 }
 
+build_source_deb() {
+    [[ "$SDEB" -eq 1 ]] || return 0
+    [[ "$OS" == "deb" ]] || die "Cannot build source deb on a non-DEB system"
+    cd "$WORKDIR"
+    rm -rf "${PACKAGE_NAME}-${VERSION}" ./*.dsc ./*.orig.tar.gz ./*.debian.tar.* ./*_source.changes
+    find_and_copy_artifact "source_tarball" "${PACKAGE_NAME}-*.tar.gz"
+    local tarfile="$FOUND_FILE"
+    mv "$tarfile" "${PACKAGE_NAME}_${VERSION}.orig.tar.gz"
+    tar xzf "${PACKAGE_NAME}_${VERSION}.orig.tar.gz"
+    cd "${PACKAGE_NAME}-${VERSION}"
+    cp -r packaging/debian ./debian
+    dch -D unstable --force-distribution -v "${VERSION}-${RELEASE}" \
+        "Update to ${PACKAGE_NAME} ${VERSION}"
+    dpkg-buildpackage -S -us -uc -d
+    cd "$WORKDIR"
+    copy_artifacts "source_deb" ./*_source.changes ./*.dsc ./*.orig.tar.gz ./*.debian.tar.*
+}
+
+build_deb() {
+    [[ "$DEB" -eq 1 ]] || return 0
+    [[ "$OS" == "deb" ]] || die "Cannot build deb on a non-DEB system"
+    local f
+    for f in dsc orig.tar.gz debian.tar.xz; do
+        find_and_copy_artifact "source_deb" "${PACKAGE_NAME}_*.${f}"
+    done
+    cd "$WORKDIR"
+    rm -rf "${PACKAGE_NAME}-${VERSION}" ./*.deb ./*.ddeb
+    dpkg-source -x "${PACKAGE_NAME}_${VERSION}-${RELEASE}.dsc"
+    cd "${PACKAGE_NAME}-${VERSION}"
+    dch -m -D "$OS_NAME" --force-distribution \
+        -v "${VERSION}-${RELEASE}.${OS_NAME}" "Update distribution"
+    dpkg-buildpackage -rfakeroot -us -uc -b
+    cd "$WORKDIR"
+    echo "DEBIAN=${OS_NAME}" >> kvrocks.properties
+    echo "ARCH=${ARCH}" >> kvrocks.properties
+    # dbgsym packages are .ddeb on older dpkg, .deb-named on newer; nullglob
+    # avoids passing a literal unmatched "*.ddeb" to copy_artifacts.
+    shopt -s nullglob
+    local ddebs=( ./*.ddeb )
+    shopt -u nullglob
+    copy_artifacts "deb" ./*.deb "${ddebs[@]}"
+}
+
 print_settings() {
     local v
     for v in WORKDIR SOURCE SRPM RPM SDEB DEB INSTALL LOCAL_BUILD REPO BRANCH VERSION RELEASE; do
@@ -306,3 +355,5 @@ install_deps
 get_sources
 build_srpm
 build_rpm
+build_source_deb
+build_deb

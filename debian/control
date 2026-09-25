@@ -1,0 +1,31 @@
+Source: percona-kvrocks
+Section: database
+Priority: optional
+Maintainer: Evgeniy Patlan <evgeniy.patlan@percona.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake (>= 3.16),
+ autoconf,
+ automake,
+ libtool,
+ git,
+ python3,
+ perl,
+ libssl-dev,
+ pkg-config
+Standards-Version: 4.6.2
+Homepage: https://kvrocks.apache.org
+Rules-Requires-Root: no
+
+Package: percona-kvrocks-server
+Architecture: any
+Depends: adduser, ${misc:Depends}, ${shlibs:Depends}
+Description: Apache Kvrocks key-value database server
+ Apache Kvrocks is a distributed key-value NoSQL database that uses RocksDB
+ as its storage engine and is compatible with the Redis protocol.
+
+Package: percona-kvrocks-tools
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Apache Kvrocks tools
+ kvrocks2redis replicates Kvrocks data to a Redis-protocol server.

@@ -1,0 +1,3 @@
+usr/bin/kvrocks
+etc/kvrocks/kvrocks.conf
+usr/share/percona-kvrocks/sbom
