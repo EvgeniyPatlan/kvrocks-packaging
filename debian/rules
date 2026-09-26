@@ -25,6 +25,7 @@ override_dh_auto_configure:
 		-DDEPS_FETCH_DIR=$(CURDIR)/deps \
 		-DENABLE_OPENSSL=ON \
 		-DPORTABLE=1 \
+		-DDEPS_FETCH_PROXY=offline-build-no-download:// \
 		-DFETCHCONTENT_FULLY_DISCONNECTED=OFF
 
 override_dh_auto_build:

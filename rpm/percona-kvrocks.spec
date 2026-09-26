@@ -72,7 +72,8 @@ cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DDEPS_FETCH_DIR="$PWD/deps" \
     -DENABLE_OPENSSL=ON \
-    -DPORTABLE=1
+    -DPORTABLE=1 \
+    -DDEPS_FETCH_PROXY=offline-build-no-download://
 cmake --build build %{?_smp_mflags} --target kvrocks kvrocks2redis
 
 %install
