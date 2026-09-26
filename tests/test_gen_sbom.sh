@@ -8,19 +8,24 @@ trap 'rm -rf "$tmp"' EXIT
 
 mkdir -p "$tmp/src/cmake" "$tmp/src/deps"
 cp "$here"/fixtures/cmake/*.cmake "$tmp/src/cmake/"
-touch "$tmp/src/deps/rocksdb-v11.8.1.zip" "$tmp/src/deps/gtest-v1.17.0.zip"
+touch "$tmp/src/deps/rocksdb-v11.8.1.zip" "$tmp/src/deps/gtest-v1.17.0.zip" "$tmp/src/deps/fast_float-v8.2.7.zip"
 
 python3 "$gen" --src "$tmp/src" --name percona-kvrocks --version 2.17.0 --out "$tmp/out"
 
 python3 - "$tmp/out" <<'EOF'
-import json, sys
+import json, re, sys
 out = sys.argv[1]
 spdx = json.load(open(f"{out}/percona-kvrocks.spdx.json"))
 cdx = json.load(open(f"{out}/percona-kvrocks.cdx.json"))
 assert spdx["spdxVersion"] == "SPDX-2.3", spdx["spdxVersion"]
 assert cdx["specVersion"] == "1.5", cdx["specVersion"]
 names = {p["name"] for p in spdx["packages"]}
-assert names == {"percona-kvrocks", "rocksdb"}, names
+assert names == {"percona-kvrocks", "rocksdb", "fast_float"}, names
+for p in spdx["packages"]:
+    assert re.fullmatch(r"SPDXRef-[A-Za-z0-9.-]+", p["SPDXID"]), p["SPDXID"]
+for r in spdx["relationships"]:
+    for k in ("spdxElementId", "relatedSpdxElement"):
+        assert re.fullmatch(r"SPDXRef-[A-Za-z0-9.-]+", r[k]), r[k]
 rocks = [c for c in cdx["components"] if c["name"] == "rocksdb"][0]
 assert rocks["version"] == "v11.8.1", rocks
 assert rocks["purl"] == "pkg:github/facebook/rocksdb@v11.8.1", rocks

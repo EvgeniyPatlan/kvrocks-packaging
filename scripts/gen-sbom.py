@@ -11,6 +11,10 @@ DECL = re.compile(r"FetchContent_DeclareGitHubWithMirror\(\s*(\S+)\s+(\S+)\s+(\S
 TEST_ONLY = {"gtest"}
 
 
+def spdx_id(name):
+    return "SPDXRef-Package-" + re.sub(r"[^A-Za-z0-9.-]", "-", name)
+
+
 def declarations(src):
     cmake_dir = src / "cmake"
     if not cmake_dir.is_dir():
@@ -40,7 +44,7 @@ def shipped(src):
 
 
 def spdx_doc(name, version, deps, now):
-    root = "SPDXRef-Package-" + name
+    root = spdx_id(name)
     packages = [{
         "name": name, "SPDXID": root, "versionInfo": version,
         "downloadLocation": "https://github.com/apache/kvrocks",
@@ -48,7 +52,7 @@ def spdx_doc(name, version, deps, now):
     }]
     rels = [{"spdxElementId": "SPDXRef-DOCUMENT", "relationshipType": "DESCRIBES", "relatedSpdxElement": root}]
     for dep, repo, tag, alg, digest in deps:
-        ref = "SPDXRef-Package-" + dep
+        ref = spdx_id(dep)
         packages.append({
             "name": dep, "SPDXID": ref, "versionInfo": tag,
             "downloadLocation": f"https://github.com/{repo}/archive/{tag}.zip",
