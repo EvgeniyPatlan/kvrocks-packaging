@@ -1,13 +1,8 @@
 %global srcname percona-kvrocks
-# EL10 and Amazon Linux 2023 auto-export hardened CFLAGS/LDFLAGS (-pie,
-# via redhat-hardened-ld) at the start of the build section; vendored
-# LuaJIT's Makefile picks up LDFLAGS while linking its host/minilua tool
-# without a matching PIE-enabled compile, breaking the link. EL8/EL9
-# never auto-export these flags, which is why only EL10/AL2023 hit it.
-# The controlling macro must be undefined, not set to zero, to suppress
-# the auto-export (redhat/macros only checks whether it is defined at
-# all); undefining a macro that was never defined is a safe no-op, so
-# this line is harmless on EL8/EL9.
+# rpm's auto-exported CFLAGS/LDFLAGS (EL10, AL2023) leak into vendored
+# LuaJIT's host tool build and break its link, so nothing is exported and the
+# distro hardening flags are passed to CMake instead, minus the PIE specs:
+# vendored jemalloc and LuaJIT build non-PIC static libraries.
 %undefine _auto_set_build_flags
 
 # 64K-page aarch64 kernels need jemalloc built for the largest page size.
@@ -73,8 +68,13 @@ kvrocks2redis, a tool that replicates Kvrocks data to a Redis-protocol server.
 # non-ASCII member names in vendored dep archives (e.g. PEGTL's test fixtures);
 # the rpmbuild scriptlet environment defaults to POSIX/C.
 export LC_ALL=C.utf8
+kvrocks_cflags="$(echo '%{optflags}' | sed -E 's#-specs=[^ ]*/redhat-hardened-cc1( |$)#\1#')"
+kvrocks_ldflags="$(echo '%{build_ldflags}' | sed -E 's#-specs=[^ ]*/redhat-hardened-ld( |$)#\1#')"
 cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_C_FLAGS="$kvrocks_cflags" \
+    -DCMAKE_CXX_FLAGS="$kvrocks_cflags" \
+    -DCMAKE_EXE_LINKER_FLAGS="$kvrocks_ldflags" \
     -DDEPS_FETCH_DIR="$PWD/deps" \
     -DENABLE_OPENSSL=ON \
     -DPORTABLE=1 \
