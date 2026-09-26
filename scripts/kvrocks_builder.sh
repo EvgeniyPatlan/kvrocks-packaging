@@ -221,9 +221,20 @@ get_sources() {
         mkdir packaging
         [[ -d "${BUILDER_SCRIPT_DIR}/../common" ]] || die "${BUILDER_SCRIPT_DIR}/../common is required by --use_local_packaging_script"
         local d
+        local -a dirs=()
         for d in rpm debian common; do
-            [[ -d "${BUILDER_SCRIPT_DIR}/../${d}" ]] && cp -r "${BUILDER_SCRIPT_DIR}/../${d}" packaging/
+            [[ -d "${BUILDER_SCRIPT_DIR}/../${d}" ]] && dirs+=("$d")
         done
+        # Build artifacts that may sit next to the packaging sources when the
+        # builder runs from the repo root must not end up in the tarball.
+        tar -C "${BUILDER_SCRIPT_DIR}/.." -cf - \
+            --exclude='*.rpm' --exclude='*.deb' --exclude='*.ddeb' \
+            --exclude='*.changes' --exclude='*.buildinfo' \
+            --exclude='debian/tmp' --exclude='debian/.debhelper' --exclude='debian/files' \
+            --exclude='debian/percona-kvrocks-server' --exclude='debian/percona-kvrocks-tools' \
+            --exclude='debian/*.substvars' --exclude='debian/*.debhelper' \
+            --exclude='debian/*.debhelper.log' --exclude='debian/debhelper-build-stamp' \
+            "${dirs[@]}" | tar -C packaging -xf - || die "Failed to copy local packaging files"
     else
         git clone --depth 1 --branch "${PACKAGING_BRANCH:-main}" "$PACKAGING_REPO" packaging \
             || die "Failed to clone packaging from $PACKAGING_REPO"
