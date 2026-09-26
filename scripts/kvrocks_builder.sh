@@ -232,6 +232,7 @@ get_sources() {
 
     python3 x.py fetch-deps "$PWD/deps" -DENABLE_OPENSSL=ON -DPORTABLE=1 \
         || die "fetch-deps failed"
+    bash "${BUILDER_SCRIPT_DIR}/vendor-licenses.sh" "$PWD" || die "vendor-licenses.sh failed"
     python3 "${BUILDER_SCRIPT_DIR}/gen-sbom.py" --src "$PWD" --name "$PACKAGE_NAME" \
         --version "$VERSION" --out "$PWD/sbom" || die "gen-sbom.py failed"
 

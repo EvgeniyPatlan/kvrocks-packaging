@@ -14,7 +14,7 @@ Name:           percona-kvrocks
 Version:        2.17.0
 Release:        1%{?dist}
 Summary:        Apache Kvrocks, a Redis-protocol compatible key-value database on RocksDB
-License:        Apache-2.0
+License:        Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT AND Zlib AND (Apache-2.0 OR GPL-2.0-only) AND (BSD-3-Clause OR GPL-2.0-only) AND (Apache-2.0 OR BSL-1.0 OR MIT)
 URL:            https://kvrocks.apache.org
 Source0:        %{srcname}-%{version}.tar.gz
 
@@ -102,7 +102,7 @@ exit 0
 %systemd_postun_with_restart kvrocks.service
 
 %files server
-%license LICENSE NOTICE
+%license LICENSE NOTICE licenses/*
 %doc README.md
 %{_bindir}/kvrocks
 %dir %attr(0770,root,kvrocks) %{_sysconfdir}/kvrocks
@@ -113,7 +113,7 @@ exit 0
 %{_datadir}/%{name}
 
 %files tools
-%license LICENSE NOTICE
+%license LICENSE NOTICE licenses/*
 %doc kvrocks2redis.conf.example
 %{_bindir}/kvrocks2redis
 

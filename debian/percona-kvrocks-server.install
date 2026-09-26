@@ -1,3 +1,4 @@
 usr/bin/kvrocks
 etc/kvrocks/kvrocks.conf
 usr/share/percona-kvrocks/sbom
+licenses/* usr/share/doc/percona-kvrocks-server/licenses

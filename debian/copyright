@@ -10,6 +10,153 @@ Files: debian/*
 Copyright: Percona LLC
 License: Apache-2.0
 
+Files: deps/cpptrace-*.zip
+Copyright: 2023-2024 Jeremy Rifkin
+License: MIT
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-cpptrace.txt
+
+Files: deps/fast_float-*.zip
+Copyright: 2021 The fast_float authors
+License: Apache-2.0 or BSL-1.0 or MIT
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-fast_float-*.txt
+
+Files: deps/fmt-*.zip
+Copyright: 2012-present Victor Zverovich
+License: MIT
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-fmt.txt
+
+Files: deps/jemalloc-*.zip
+Copyright: 2002-present Jason Evans
+ 2007-2012 Mozilla Foundation
+ 2009-present Facebook, Inc.
+License: BSD-2-Clause
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-jemalloc.txt
+
+Files: deps/jsoncons-*.zip
+Copyright: 2013-2020 Daniel Parker
+License: BSL-1.0
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-jsoncons.txt
+
+Files: deps/libevent-*.zip
+Copyright: 2000-2012 Niels Provos and Nick Mathewson
+License: BSD-3-Clause
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-libevent.txt
+
+Files: deps/luajit-*.zip
+Copyright: 2005-2022 Mike Pall
+License: MIT
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-LuaJIT.txt
+
+Files: deps/lz4-*.zip
+Copyright: 2011-2020 Yann Collet
+License: BSD-2-Clause
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-lz4.txt
+
+Files: deps/pegtl-*.zip
+Copyright: 2007-2022 Dr. Colin Hirsch and Daniel Frey
+License: MIT
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-pegtl.txt
+
+Files: deps/rangev3-*.zip
+Copyright: 2009-2014 the range-v3 contributors
+License: BSL-1.0
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-range-v3.txt
+
+Files: deps/rocksdb-*.zip
+Copyright: 2011-present Facebook, Inc.
+ Meta Platforms, Inc. and affiliates
+ 2011 The LevelDB Authors
+License: (GPL-2.0-only or Apache-2.0) and BSD-3-Clause
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-rocksdb-*.txt
+
+Files: deps/snappy-*.zip
+Copyright: 2011 Google Inc.
+License: BSD-3-Clause
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-snappy.txt
+
+Files: deps/span-*.zip
+Copyright: 2018-2021 Martin Moene
+License: BSL-1.0
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-span-lite.txt
+
+Files: deps/spdlog-*.zip
+Copyright: 2016 Gabi Melman
+License: MIT
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-spdlog.txt
+
+Files: deps/tbb-*.zip
+Copyright: 2005-2025 Intel Corporation
+License: Apache-2.0
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-tbb.txt
+
+Files: deps/trie-*.zip
+Copyright: 2017 Thibaut Goetghebuer-Planchon
+License: MIT
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-hat-trie.txt
+
+Files: deps/xxhash-*.zip
+Copyright: 2012-2021 Yann Collet
+License: BSD-2-Clause
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-xxhash.txt
+
+Files: deps/zlib-*.zip
+Copyright: 1995-2024 Jean-loup Gailly and Mark Adler
+License: Zlib
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-zlib-ng.txt
+
+Files: deps/zstd-*.zip
+Copyright: Meta Platforms, Inc. and affiliates
+License: BSD-3-Clause or GPL-2.0-only
+Comment: Statically linked into the binaries. License text installed as
+ /usr/share/doc/percona-kvrocks-*/licenses/LICENSE-zstd-*.txt
+
 License: Apache-2.0
  On Debian systems, the full text of the Apache License 2.0 can be found in
  /usr/share/common-licenses/Apache-2.0.
+
+License: BSD-2-Clause
+ The full text of each component's license is installed in
+ /usr/share/doc/percona-kvrocks-server/licenses/ and
+ /usr/share/doc/percona-kvrocks-tools/licenses/.
+
+License: BSD-3-Clause
+ The full text of each component's license is installed in
+ /usr/share/doc/percona-kvrocks-server/licenses/ and
+ /usr/share/doc/percona-kvrocks-tools/licenses/.
+
+License: BSL-1.0
+ The full text of each component's license is installed in
+ /usr/share/doc/percona-kvrocks-server/licenses/ and
+ /usr/share/doc/percona-kvrocks-tools/licenses/.
+
+License: MIT
+ The full text of each component's license is installed in
+ /usr/share/doc/percona-kvrocks-server/licenses/ and
+ /usr/share/doc/percona-kvrocks-tools/licenses/.
+
+License: Zlib
+ The full text of each component's license is installed in
+ /usr/share/doc/percona-kvrocks-server/licenses/ and
+ /usr/share/doc/percona-kvrocks-tools/licenses/.
+
+License: GPL-2.0-only
+ On Debian systems, the full text of the GNU General Public License
+ version 2 can be found in /usr/share/common-licenses/GPL-2.
