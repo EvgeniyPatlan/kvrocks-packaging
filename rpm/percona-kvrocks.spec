@@ -10,6 +10,11 @@
 # this line is harmless on EL8/EL9.
 %undefine _auto_set_build_flags
 
+# 64K-page aarch64 kernels need jemalloc built for the largest page size.
+%ifarch aarch64
+%global jemalloc_flags -DJEMALLOC_CROSS_FLAGS=--with-lg-page=16
+%endif
+
 Name:           percona-kvrocks
 Version:        2.17.0
 Release:        1%{?dist}
@@ -73,7 +78,8 @@ cmake -S . -B build \
     -DDEPS_FETCH_DIR="$PWD/deps" \
     -DENABLE_OPENSSL=ON \
     -DPORTABLE=1 \
-    -DDEPS_FETCH_PROXY=offline-build-no-download://
+    -DDEPS_FETCH_PROXY=offline-build-no-download:// \
+    %{?jemalloc_flags}
 cmake --build build %{?_smp_mflags} --target kvrocks kvrocks2redis
 
 %install

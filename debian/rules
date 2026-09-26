@@ -9,6 +9,11 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 # the dpkg-buildpackage environment defaults to POSIX/C.
 export LC_ALL = C.UTF-8
 
+# 64K-page arm64 kernels need jemalloc built for the largest page size.
+ifeq ($(DEB_HOST_ARCH),arm64)
+JEMALLOC_FLAGS = -DJEMALLOC_CROSS_FLAGS=--with-lg-page=16
+endif
+
 %:
 	dh $@ --buildsystem=cmake
 
@@ -26,6 +31,7 @@ override_dh_auto_configure:
 		-DENABLE_OPENSSL=ON \
 		-DPORTABLE=1 \
 		-DDEPS_FETCH_PROXY=offline-build-no-download:// \
+		$(JEMALLOC_FLAGS) \
 		-DFETCHCONTENT_FULLY_DISCONNECTED=OFF
 
 override_dh_auto_build:
