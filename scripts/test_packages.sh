@@ -129,6 +129,7 @@ test_state_dir_recreated() {
 test_config_preserved_on_reinstall() {
     section "Config preserved on reinstall"
     [[ -n "$PKG_DIR" ]] || { skip "only with --pkg-dir"; return; }
+    systemctl is-active --quiet kvrocks || { systemctl start kvrocks && wait_ready; }
     echo "# pkgtest-marker" >> /etc/kvrocks/kvrocks.conf
     if [[ "$OS_FAMILY" == deb ]]; then
         apt-get install -y --reinstall "$PKG_DIR"/percona-kvrocks-server_*.deb >/dev/null 2>&1
@@ -136,6 +137,7 @@ test_config_preserved_on_reinstall() {
         pm reinstall -y "$PKG_DIR"/percona-kvrocks-server-[0-9]*.rpm >/dev/null 2>&1
     fi
     check "local edit kept" grep -q 'pkgtest-marker' /etc/kvrocks/kvrocks.conf
+    check "service still active after reinstall" systemctl is-active kvrocks
 }
 
 test_removal() {

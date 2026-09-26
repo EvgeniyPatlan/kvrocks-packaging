@@ -45,7 +45,7 @@ override_dh_auto_install:
 
 override_dh_installsystemd:
 	install -D -m 0644 packaging/common/kvrocks.service debian/percona-kvrocks-server.kvrocks.service
-	dh_installsystemd -ppercona-kvrocks-server --name=kvrocks --no-start
+	dh_installsystemd -ppercona-kvrocks-server --name=kvrocks --no-start --restart-after-upgrade
 
 override_dh_fixperms:
 	dh_fixperms -Xetc/kvrocks/kvrocks.conf
