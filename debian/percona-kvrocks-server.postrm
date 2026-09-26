@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" = "purge" ]; then
-    for p in /etc/kvrocks/kvrocks.conf /var/lib/kvrocks /var/log/kvrocks; do
+    for p in /etc/kvrocks/kvrocks.conf /etc/kvrocks /var/lib/kvrocks /var/log/kvrocks; do
         dpkg-statoverride --remove "$p" 2>/dev/null || true
     done
     rm -rf /var/lib/kvrocks /var/log/kvrocks

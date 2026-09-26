@@ -86,7 +86,8 @@ test_files() {
     check "/usr/bin/kvrocks executable" test -x /usr/bin/kvrocks
     check "/usr/bin/kvrocks2redis executable" test -x /usr/bin/kvrocks2redis
     check "kvrocks user exists" getent passwd kvrocks
-    check "config mode 640 root:kvrocks" test "$(stat -c '%a %U:%G' /etc/kvrocks/kvrocks.conf)" = "640 root:kvrocks"
+    check "config dir 770 root:kvrocks" test "$(stat -c '%a %U:%G' /etc/kvrocks)" = "770 root:kvrocks"
+    check "config mode 660 root:kvrocks" test "$(stat -c '%a %U:%G' /etc/kvrocks/kvrocks.conf)" = "660 root:kvrocks"
     check "data dir 750 kvrocks:kvrocks" test "$(stat -c '%a %U:%G' /var/lib/kvrocks)" = "750 kvrocks:kvrocks"
     check "log dir 750 kvrocks:kvrocks" test "$(stat -c '%a %U:%G' /var/log/kvrocks)" = "750 kvrocks:kvrocks"
     check "config dir set to /var/lib/kvrocks" grep -qx 'dir /var/lib/kvrocks' /etc/kvrocks/kvrocks.conf
@@ -111,6 +112,8 @@ test_service() {
     check "PING answers PONG" wait_ready
     check "SET" test "$(resp $'*3\r\n$3\r\nSET\r\n$7\r\npkgtest\r\n$5\r\nvalue\r\n')" = "+OK"
     check "GET" test "$(resp "$get")" = "value"
+    check "CONFIG REWRITE works" test "$(resp $'*2\r\n$6\r\nCONFIG\r\n$7\r\nREWRITE\r\n')" = "+OK"
+    check "rewritten config not world-accessible" bash -c "test -f /etc/kvrocks/kvrocks.conf && test -z \"\$(find /etc/kvrocks/kvrocks.conf -perm /o=rwx)\""
     check "restart" systemctl restart kvrocks
     check "ready after restart" wait_ready
     check "data survives restart" test "$(resp "$get")" = "value"

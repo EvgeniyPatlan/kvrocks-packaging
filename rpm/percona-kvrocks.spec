@@ -105,8 +105,8 @@ exit 0
 %license LICENSE NOTICE
 %doc README.md
 %{_bindir}/kvrocks
-%dir %attr(0750,root,kvrocks) %{_sysconfdir}/kvrocks
-%config(noreplace) %attr(0640,root,kvrocks) %{_sysconfdir}/kvrocks/kvrocks.conf
+%dir %attr(0770,root,kvrocks) %{_sysconfdir}/kvrocks
+%config(noreplace) %attr(0660,root,kvrocks) %{_sysconfdir}/kvrocks/kvrocks.conf
 %{_unitdir}/kvrocks.service
 %dir %attr(0750,kvrocks,kvrocks) %{_sharedstatedir}/kvrocks
 %dir %attr(0750,kvrocks,kvrocks) %{_localstatedir}/log/kvrocks

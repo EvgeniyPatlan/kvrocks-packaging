@@ -13,8 +13,11 @@ if [ "$1" = "configure" ]; then
             dpkg-statoverride --update --add kvrocks kvrocks 0750 "$d"
         fi
     done
+    if ! dpkg-statoverride --list /etc/kvrocks >/dev/null 2>&1; then
+        dpkg-statoverride --update --add root kvrocks 0770 /etc/kvrocks
+    fi
     if ! dpkg-statoverride --list "$CONFFILE" >/dev/null 2>&1; then
-        dpkg-statoverride --update --add root kvrocks 0640 "$CONFFILE"
+        dpkg-statoverride --update --add root kvrocks 0660 "$CONFFILE"
     fi
 fi
 
