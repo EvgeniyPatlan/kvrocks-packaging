@@ -23,6 +23,7 @@ BuildRequires:  gcc-toolset-12-gcc
 BuildRequires:  gcc-toolset-12-gcc-c++
 BuildRequires:  gcc-toolset-12-libstdc++-devel
 BuildRequires:  gcc-toolset-12-annobin-plugin-gcc
+BuildRequires:  gcc-toolset-12-libatomic-devel
 %else
 BuildRequires:  gcc
 BuildRequires:  gcc-c++

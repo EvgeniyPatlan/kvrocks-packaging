@@ -177,7 +177,8 @@ install_deps_rpm() {
     case "$RHEL" in
         8|9)
             pkgs+=(gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-libstdc++-devel
-                   gcc-toolset-12-binutils gcc-toolset-12-annobin-plugin-gcc)
+                   gcc-toolset-12-binutils gcc-toolset-12-annobin-plugin-gcc
+                   gcc-toolset-12-libatomic-devel)
             ;;
         *)
             pkgs+=(gcc gcc-c++ libstdc++-static)
